@@ -26,9 +26,7 @@ public class Book {
 
     private boolean available;
 
-    @ManyToOne
-    @JoinColumn(name = "author_id")
-    private Author author;
+    private String authorName;
 
     @OneToMany(mappedBy = "book", cascade = CascadeType.ALL)
     private List<Rent> rents;
