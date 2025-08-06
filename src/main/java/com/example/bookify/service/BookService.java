@@ -1,13 +1,14 @@
 package com.example.bookify.service;
 
-import com.example.bookify.model.Book;
+import com.example.bookify.dto.BookRequest;
+import com.example.bookify.dto.BookResponse;
 
 import java.util.List;
 
 public interface BookService {
-    Book create(Book book);
-    Book getById(Long id);
-    List<Book> getAll();
-    Book update(Long id, Book updatedBook);
+    BookResponse create(BookRequest bookRequest);
+    BookResponse getById(Long id);
+    List<BookResponse> getAll();
+    BookResponse update(Long id, BookRequest updatedBookRequest);
     void delete(Long id);
 }
