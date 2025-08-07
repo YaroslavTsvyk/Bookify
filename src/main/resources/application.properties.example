@@ -1,0 +1,3 @@
+spring.application.name=Bookify
+
+jwt.secret=YOUR_SECRET_HERE

@@ -5,6 +5,8 @@ import com.example.bookify.repository.UserRepository;
 import com.example.bookify.service.UserService;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.AllArgsConstructor;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -45,5 +47,11 @@ public class UserServiceImpl implements UserService {
     @Override
     public void delete(Long id) {
         userRepository.delete(getById(id));
+    }
+
+    @Override
+    public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
+        return userRepository.findByEmail(email)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
     }
 }
