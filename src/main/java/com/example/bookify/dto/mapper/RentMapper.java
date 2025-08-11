@@ -1,6 +1,5 @@
 package com.example.bookify.dto.mapper;
 
-import com.example.bookify.dto.RentRequest;
 import com.example.bookify.dto.RentResponse;
 import com.example.bookify.model.Book;
 import com.example.bookify.model.Rent;
@@ -12,7 +11,7 @@ import java.time.LocalDate;
 
 @Component
 public class RentMapper {
-    public Rent toEntity(RentRequest dto, User user, Book book) {
+    public Rent toEntity(User user, Book book) {
         return Rent.builder()
                 .book(book)
                 .user(user)

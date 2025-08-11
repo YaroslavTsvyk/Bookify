@@ -1,51 +1,70 @@
 package com.example.bookify.service.impl;
 
+import com.example.bookify.dto.BookRequest;
+import com.example.bookify.dto.BookResponse;
+import com.example.bookify.dto.mapper.BookMapper;
 import com.example.bookify.model.Book;
 import com.example.bookify.repository.BookRepository;
 import com.example.bookify.service.BookService;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
 @Service
 @AllArgsConstructor
+@Transactional
 public class BookServiceImpl implements BookService {
 
     private final BookRepository bookRepository;
+    private final BookMapper bookMapper;
 
     @Override
-    public Book create(Book book) {
-        return bookRepository.save(book);
+    public BookResponse create(BookRequest bookRequest) {
+        Book book = bookRepository.save(bookMapper.toEntity(bookRequest));
+        return bookMapper.toDto(book);
     }
 
     @Override
-    public Book getById(Long id) {
-        return bookRepository.findById(id)
+    @Transactional(readOnly = true)
+    public BookResponse getById(Long id) {
+        Book book = bookRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Book with id " + id + " not found"));
+        return bookMapper.toDto(book);
     }
 
     @Override
-    public List<Book> getAll() {
-        return bookRepository.findAll();
+    @Transactional(readOnly = true)
+    public List<BookResponse> getAll() {
+        return bookRepository.findAll()
+                .stream()
+                .map(bookMapper::toDto)
+                .toList();
     }
 
     @Override
-    public Book update(Long id, Book updatedBook) {
-        Book existing = getById(id);
-        existing.setTitle(updatedBook.getTitle());
-        existing.setDescription(updatedBook.getDescription());
-        existing.setCategory(updatedBook.getCategory());
-        existing.setAuthorName(updatedBook.getAuthorName());
-        existing.setPublicationYear(updatedBook.getPublicationYear());
-        existing.setAvailable(updatedBook.isAvailable());
-        existing.setRents(updatedBook.getRents());
-        return bookRepository.save(existing);
+    public BookResponse update(Long id, BookRequest updatedBookRequest) {
+        Book book = bookRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Book with id " + id + " not found"));
+
+        book.setTitle(updatedBookRequest.getTitle());
+        book.setCategory(updatedBookRequest.getCategory());
+        book.setDescription(updatedBookRequest.getDescription());
+        book.setAuthorName(updatedBookRequest.getAuthorName());
+        book.setAvailable(updatedBookRequest.isAvailable());
+        book.setPublicationYear(updatedBookRequest.getPublicationYear());
+
+        bookRepository.save(book);
+
+        return bookMapper.toDto(book);
     }
 
     @Override
     public void delete(Long id) {
-        bookRepository.delete(getById(id));
+        Book book = bookRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Book with id " + id + " not found"));
+        bookRepository.delete(book);
     }
 }
