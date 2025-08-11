@@ -4,6 +4,7 @@ import com.example.bookify.dto.RentRequest;
 import com.example.bookify.dto.RentResponse;
 import com.example.bookify.model.User;
 import com.example.bookify.service.RentService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -21,7 +22,7 @@ public class RentController {
 
 
     @PostMapping
-    public ResponseEntity<RentResponse> createRent(@RequestBody RentRequest request) {
+    public ResponseEntity<RentResponse> createRent(@Valid @RequestBody RentRequest request) {
         RentResponse response = rentService.create(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
