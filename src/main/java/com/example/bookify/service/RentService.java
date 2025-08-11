@@ -11,4 +11,6 @@ public interface RentService {
     List<RentResponse> getAll();
     RentResponse update(Long id, RentRequest updatedRentRequest);
     void delete(Long id);
+    List<RentResponse> getAllForUser();
+    RentResponse returnBook(Long rentId);
 }

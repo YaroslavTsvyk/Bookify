@@ -5,6 +5,7 @@ import com.example.bookify.dto.RentResponse;
 import com.example.bookify.dto.mapper.RentMapper;
 import com.example.bookify.model.Book;
 import com.example.bookify.model.Rent;
+import com.example.bookify.model.RentStatus;
 import com.example.bookify.model.User;
 import com.example.bookify.repository.BookRepository;
 import com.example.bookify.repository.RentRepository;
@@ -12,9 +13,11 @@ import com.example.bookify.service.RentService;
 import com.example.bookify.service.UserService;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.AllArgsConstructor;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @Service
@@ -32,12 +35,18 @@ public class RentServiceImpl implements RentService {
         Book book = bookRepository.findById(rentRequest.getBookId())
                 .orElseThrow(() -> new EntityNotFoundException("Book with id " + rentRequest.getBookId() + " not found"));
 
-        // TODO after implementing auth correct this and other methods, which work with rentMapper.toEntity(...)
-        User user = userService.getById(1L);
+        if (!book.isAvailable()) {
+            // TODO add Unavailable book exception when improving exception handling
+        }
+
+        User user = userService.getCurrentUser();
+
+        book.setAvailable(false);
 
         Rent rent = rentMapper.toEntity(user, book);
 
         rentRepository.save(rent);
+        bookRepository.save(book);
         return rentMapper.toDto(rent);
     }
 
@@ -77,5 +86,42 @@ public class RentServiceImpl implements RentService {
         Rent rent = rentRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Rent with id " + id + " not found"));
         rentRepository.delete(rent);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<RentResponse> getAllForUser() {
+        User user = userService.getCurrentUser();
+        return rentRepository.findAllByUser(user)
+                .stream()
+                .map(rentMapper::toDto)
+                .toList();
+    }
+
+    @Override
+    public RentResponse returnBook(Long rentId) {
+        Rent rent = rentRepository.findById(rentId)
+                .orElseThrow(() -> new EntityNotFoundException("Rent not found"));
+
+        User currentUser = userService.getCurrentUser();
+
+        if (!rent.getUser().getId().equals(currentUser.getId())) {
+            throw new AccessDeniedException("You are not allowed to return this book");
+        }
+
+        if (rent.getStatus() == RentStatus.RETURNED) {
+            throw new IllegalStateException("Book is already returned");
+        }
+
+        Book book = rent.getBook();
+        book.setAvailable(true);
+        bookRepository.save(book);
+
+        rent.setReturnDate(LocalDate.now());
+        rent.setStatus(RentStatus.RETURNED);
+
+        rentRepository.save(rent);
+
+        return rentMapper.toDto(rent);
     }
 }

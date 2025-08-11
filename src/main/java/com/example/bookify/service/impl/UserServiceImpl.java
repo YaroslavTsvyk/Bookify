@@ -5,14 +5,17 @@ import com.example.bookify.repository.UserRepository;
 import com.example.bookify.service.UserService;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.AllArgsConstructor;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
 @Service
 @AllArgsConstructor
+@Transactional
 public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
@@ -36,7 +39,8 @@ public class UserServiceImpl implements UserService {
     @Override
     public User update(Long id, User updatedUser) {
         User existing = getById(id);
-        existing.setUsername(updatedUser.getUsername());
+        existing.setFirstName(updatedUser.getFirstName());
+        existing.setLastName(updatedUser.getLastName());
         existing.setEmail(updatedUser.getEmail());
         existing.setPassword(updatedUser.getPassword());
         existing.setRole(updatedUser.getRole());
@@ -50,8 +54,20 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
-        return userRepository.findByEmail(email)
+    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+        return userRepository.findByEmail(username)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+    }
+
+    @Override
+    public User getCurrentUser() {
+        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+
+        if (principal instanceof UserDetails userDetails) {
+            return userRepository.findByEmail(userDetails.getUsername())
+                    .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+        }
+
+        throw new RuntimeException("Authentication error");
     }
 }

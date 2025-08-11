@@ -4,6 +4,7 @@ import com.example.bookify.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
@@ -32,6 +33,20 @@ public class SecurityConfig {
                 .cors(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/auth/**").permitAll()
+
+                        // Books
+                        .requestMatchers(HttpMethod.GET, "/api/books/**").hasAnyAuthority("ADMIN", "USER")
+                        .requestMatchers(HttpMethod.POST, "/api/books/**").hasAuthority("ADMIN")
+                        .requestMatchers(HttpMethod.PUT, "/api/books/**").hasAuthority("ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, "/api/books/**").hasAuthority("ADMIN")
+
+                        // Rents
+                        .requestMatchers(HttpMethod.GET, "/api/rents/my").hasAnyAuthority("ADMIN", "USER")
+                        .requestMatchers(HttpMethod.GET, "/api/rents/**").hasAnyAuthority("ADMIN")
+                        .requestMatchers(HttpMethod.POST, "/api/rents/**").hasAnyAuthority("ADMIN", "USER")
+                        .requestMatchers(HttpMethod.PUT, "/api/rents/**").hasAuthority("ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, "/api/rents/**").hasAuthority("ADMIN")
+
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(sess -> sess
