@@ -1,5 +1,6 @@
 package com.example.bookify.service.impl;
 
+import com.example.bookify.exception.ResourceNotFoundException;
 import com.example.bookify.model.User;
 import com.example.bookify.repository.UserRepository;
 import com.example.bookify.service.UserService;
@@ -28,7 +29,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public User getById(Long id) {
         return userRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("User with id " + id + " not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("User with id " + id + " not found"));
     }
 
     @Override

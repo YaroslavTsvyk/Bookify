@@ -3,10 +3,10 @@ package com.example.bookify.service.impl;
 import com.example.bookify.dto.BookRequest;
 import com.example.bookify.dto.BookResponse;
 import com.example.bookify.dto.mapper.BookMapper;
+import com.example.bookify.exception.ResourceNotFoundException;
 import com.example.bookify.model.Book;
 import com.example.bookify.repository.BookRepository;
 import com.example.bookify.service.BookService;
-import jakarta.persistence.EntityNotFoundException;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -31,7 +31,7 @@ public class BookServiceImpl implements BookService {
     @Transactional(readOnly = true)
     public BookResponse getById(Long id) {
         Book book = bookRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Book with id " + id + " not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Book with id " + id + " not found"));
         return bookMapper.toDto(book);
     }
 
@@ -47,7 +47,7 @@ public class BookServiceImpl implements BookService {
     @Override
     public BookResponse update(Long id, BookRequest updatedBookRequest) {
         Book book = bookRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Book with id " + id + " not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Book with id " + id + " not found"));
 
         book.setTitle(updatedBookRequest.getTitle());
         book.setCategory(updatedBookRequest.getCategory());
@@ -64,7 +64,7 @@ public class BookServiceImpl implements BookService {
     @Override
     public void delete(Long id) {
         Book book = bookRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Book with id " + id + " not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Book with id " + id + " not found"));
         bookRepository.delete(book);
     }
 }

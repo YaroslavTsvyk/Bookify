@@ -1,6 +1,7 @@
 package com.example.bookify.configuration;
 
 import com.example.bookify.service.UserService;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -35,19 +36,28 @@ public class SecurityConfig {
                         .requestMatchers("/api/auth/**").permitAll()
 
                         // Books
-                        .requestMatchers(HttpMethod.GET, "/api/books/**").hasAnyAuthority("ADMIN", "USER")
                         .requestMatchers(HttpMethod.POST, "/api/books/**").hasAuthority("ADMIN")
                         .requestMatchers(HttpMethod.PUT, "/api/books/**").hasAuthority("ADMIN")
                         .requestMatchers(HttpMethod.DELETE, "/api/books/**").hasAuthority("ADMIN")
 
                         // Rents
-                        .requestMatchers(HttpMethod.GET, "/api/rents/my").hasAnyAuthority("ADMIN", "USER")
-                        .requestMatchers(HttpMethod.GET, "/api/rents/**").hasAnyAuthority("ADMIN")
-                        .requestMatchers(HttpMethod.POST, "/api/rents/**").hasAnyAuthority("ADMIN", "USER")
+                        .requestMatchers(HttpMethod.GET, "/api/rents").hasAnyAuthority("ADMIN")
                         .requestMatchers(HttpMethod.PUT, "/api/rents/**").hasAuthority("ADMIN")
                         .requestMatchers(HttpMethod.DELETE, "/api/rents/**").hasAuthority("ADMIN")
 
                         .anyRequest().authenticated()
+                )
+                .exceptionHandling(exception -> exception
+                        .authenticationEntryPoint((request, response, authException) -> {
+                            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                            response.setContentType("application/json");
+                            response.getWriter().write("{\"error\":\"Unauthorized\",\"message\":\"You are unauthorized\"}");
+                        })
+                        .accessDeniedHandler((request, response, accessDeniedException) -> {
+                            response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+                            response.setContentType("application/json");
+                            response.getWriter().write("{\"error\":\"Forbidden\",\"message\":\"You have no access to this resource\"}");
+                        })
                 )
                 .sessionManagement(sess -> sess
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS)

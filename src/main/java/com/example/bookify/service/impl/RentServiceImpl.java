@@ -3,6 +3,9 @@ package com.example.bookify.service.impl;
 import com.example.bookify.dto.RentRequest;
 import com.example.bookify.dto.RentResponse;
 import com.example.bookify.dto.mapper.RentMapper;
+import com.example.bookify.exception.BookAlreadyReturnedException;
+import com.example.bookify.exception.BookUnavailableException;
+import com.example.bookify.exception.ResourceNotFoundException;
 import com.example.bookify.model.Book;
 import com.example.bookify.model.Rent;
 import com.example.bookify.model.RentStatus;
@@ -33,10 +36,10 @@ public class RentServiceImpl implements RentService {
     @Override
     public RentResponse create(RentRequest rentRequest) {
         Book book = bookRepository.findById(rentRequest.getBookId())
-                .orElseThrow(() -> new EntityNotFoundException("Book with id " + rentRequest.getBookId() + " not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Book with id " + rentRequest.getBookId() + " not found"));
 
         if (!book.isAvailable()) {
-            // TODO add Unavailable book exception when improving exception handling
+            throw new BookUnavailableException("This book is unavailable at the moment");
         }
 
         User user = userService.getCurrentUser();
@@ -54,7 +57,7 @@ public class RentServiceImpl implements RentService {
     @Transactional(readOnly = true)
     public RentResponse getById(Long id) {
         Rent rent = rentRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Rent with id " + id + " not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Rent with id " + id + " not found"));
         return rentMapper.toDto(rent);
     }
 
@@ -70,10 +73,10 @@ public class RentServiceImpl implements RentService {
     @Override
     public RentResponse update(Long id, RentRequest updatedRentRequest) {
         Rent rent = rentRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Rent with id " + id + " not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Rent with id " + id + " not found"));
 
         Book book = bookRepository.findById(updatedRentRequest.getBookId())
-                .orElseThrow(() -> new EntityNotFoundException("Book with id " + updatedRentRequest.getBookId() + " not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Book with id " + updatedRentRequest.getBookId() + " not found"));
 
         rent.setBook(book);
         rentRepository.save(rent);
@@ -84,7 +87,7 @@ public class RentServiceImpl implements RentService {
     @Override
     public void delete(Long id) {
         Rent rent = rentRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Rent with id " + id + " not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Rent with id " + id + " not found"));
         rentRepository.delete(rent);
     }
 
@@ -101,7 +104,7 @@ public class RentServiceImpl implements RentService {
     @Override
     public RentResponse returnBook(Long rentId) {
         Rent rent = rentRepository.findById(rentId)
-                .orElseThrow(() -> new EntityNotFoundException("Rent not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Rent not found"));
 
         User currentUser = userService.getCurrentUser();
 
@@ -110,7 +113,7 @@ public class RentServiceImpl implements RentService {
         }
 
         if (rent.getStatus() == RentStatus.RETURNED) {
-            throw new IllegalStateException("Book is already returned");
+            throw new BookAlreadyReturnedException("Book is already returned");
         }
 
         Book book = rent.getBook();
