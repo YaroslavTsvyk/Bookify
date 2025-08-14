@@ -1,20 +1,20 @@
 package com.example.bookify.exception;
 
+import lombok.extern.slf4j.Slf4j;
 import org.apache.coyote.BadRequestException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.AuthenticationException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
-import java.nio.file.AccessDeniedException;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
 
 @RestControllerAdvice
+@Slf4j
 public class GlobalExceptionHandler {
 
     // 400 - Bad Request
@@ -58,10 +58,12 @@ public class GlobalExceptionHandler {
     }
 
     private ResponseEntity<Object> buildErrorResponse(HttpStatus status, String message) {
+        log.warn("Exception occurred: '{}'", message);
         Map<String, Object> body = new HashMap<>();
         body.put("timestamp", LocalDateTime.now());
         body.put("status", status.value());
         body.put("error", message);
+
         return new ResponseEntity<>(body, status);
     }
 }
