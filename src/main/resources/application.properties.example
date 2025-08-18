@@ -1,3 +1,12 @@
 spring.application.name=Bookify
 
 jwt.secret=YOUR_SECRET_HERE
+
+spring.sql.init.platform=postgres
+spring.datasource.url=jdbc:postgresql://localhost:5432/bookify
+spring.jpa.database=POSTGRESQL
+spring.datasource.username=YOUR_DATASOURCE_USERNAME
+spring.datasource.password=YOUR_DATASOURCE_PASSWORD
+
+spring.jpa.hibernate.ddl-auto=update
+spring.sql.init.mode=always

@@ -1,10 +1,12 @@
 package com.example.bookify.service.impl;
 
+import com.example.bookify.exception.ResourceNotFoundException;
 import com.example.bookify.model.User;
 import com.example.bookify.repository.UserRepository;
 import com.example.bookify.service.UserService;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -16,6 +18,7 @@ import java.util.List;
 @Service
 @AllArgsConstructor
 @Transactional
+@Slf4j
 public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
@@ -28,7 +31,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public User getById(Long id) {
         return userRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("User with id " + id + " not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("User with id " + id + " not found"));
     }
 
     @Override
@@ -56,7 +59,8 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         return userRepository.findByEmail(username)
-                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+                .orElseThrow(() ->
+                    new UsernameNotFoundException("User with username " + username + " not found"));
     }
 
     @Override
@@ -65,7 +69,8 @@ public class UserServiceImpl implements UserService {
 
         if (principal instanceof UserDetails userDetails) {
             return userRepository.findByEmail(userDetails.getUsername())
-                    .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+                    .orElseThrow(() -> new UsernameNotFoundException("User with username " +
+                            userDetails.getUsername() + " not found"));
         }
 
         throw new RuntimeException("Authentication error");
