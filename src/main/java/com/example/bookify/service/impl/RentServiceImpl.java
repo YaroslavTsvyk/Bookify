@@ -43,7 +43,7 @@ public class RentServiceImpl implements RentService {
                         rentRequest.getBookId() + " not found"));
 
         if (!book.isAvailable()) {
-            throw new BookUnavailableException("This book is unavailable at the moment");
+            throw new BookUnavailableException("Book with id " + book.getId() + " is unavailable at the moment");
         }
 
         User user = userService.getCurrentUser();
@@ -88,10 +88,7 @@ public class RentServiceImpl implements RentService {
         log.info("Updating rent with id={}", id);
 
         Rent rent = rentRepository.findById(id)
-                .orElseThrow(() -> {
-                    log.warn("Rent with id={} not found", id);
-                    return new ResourceNotFoundException("Rent with id " + id + " not found");
-                });
+                .orElseThrow(() -> new ResourceNotFoundException("Rent with id " + id + " not found"));
 
         Book book = bookRepository.findById(updatedRentRequest.getBookId())
                 .orElseThrow(() -> new ResourceNotFoundException("Book with id " +
@@ -110,7 +107,7 @@ public class RentServiceImpl implements RentService {
         Rent rent = rentRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Rent with id " + id + " not found"));
         rentRepository.delete(rent);
-        log.info("Rent with id={} deleted successfully", id);
+        log.debug("Rent with id={} deleted successfully", id);
     }
 
     @Override
@@ -136,11 +133,11 @@ public class RentServiceImpl implements RentService {
         User currentUser = userService.getCurrentUser();
 
         if (!rent.getUser().getId().equals(currentUser.getId())) {
-            throw new AccessDeniedException("You are not allowed to return this book");
+            throw new AccessDeniedException("User with id " + currentUser.getId() + " is not allowed to return this book");
         }
 
         if (rent.getStatus() == RentStatus.RETURNED) {
-            throw new BookAlreadyReturnedException("Book is already returned");
+            throw new BookAlreadyReturnedException("Book with id " + rent.getBook().getId() + " is already returned");
         }
 
         Book book = rent.getBook();

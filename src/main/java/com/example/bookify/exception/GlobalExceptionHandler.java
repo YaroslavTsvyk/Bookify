@@ -45,7 +45,7 @@ public class GlobalExceptionHandler {
         return buildErrorResponse(HttpStatus.NOT_FOUND, ex.getMessage());
     }
 
-    // 409 - Illegal Book States
+    // 409 - Illegal Book/Rent States
     @ExceptionHandler({BookAlreadyReturnedException.class, BookUnavailableException.class})
     public ResponseEntity<Object> handleIllegalBookStates(RuntimeException ex) {
         return buildErrorResponse(HttpStatus.CONFLICT, ex.getMessage());
