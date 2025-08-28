@@ -4,9 +4,23 @@
 
 ---
 
-## 🚀 Features
+## Table of Contents
 
-- **Book Management**: add, edit, delete books.
+- [🚀 Features](#features)
+- [🛠 Technologies](#technologies)
+- [📦 Installation & Running](#getting-started)
+- [🔑 Example Endpoints](#example-endpoints)
+- [📔 API Documentation (Swagger)](#api-documentation-swagger)
+- [🧩 Project Structure](#project-structure)
+- [⚡ Future Improvements](#future-improvements)
+- [📬 Postman Collection](#postman-collection)
+- [📊 Viewing Code Coverage with JaCoCo](#viewing-code-coverage-with-jacoco)
+
+---
+
+## Features
+
+- **Book Management**: CRUD operations for books.
 - **User Management**: registration, login (Two roles with different permits provided - ```ADMIN``` and ```USER```).
 - **Rent Actions**: rent and return books, view rents.
 - **Authentication**: JWT-based authentication.
@@ -14,7 +28,7 @@
 
 ---
 
-## 🛠 Technologies
+## Technologies
 
 - **Java 17**
 - **Spring Boot 3**
@@ -27,10 +41,11 @@
 - **JUnit 5 + Mockito**
 - **Slf4j**
 - **Jacoco**
+- **Springdoc OpenAPI (Swagger UI)**
 
 ---
 
-## 📦 Installation & Running
+## Installation & Running
 
 1. **Clone the repository**
 
@@ -68,7 +83,195 @@ mvn spring-boot:run
 
 ---
 
-## 🧩 Project Structure
+## Example Endpoints
+
+### Authentication
+
+**Register a new user**
+
+```bash
+POST /api/auth/register
+Content-Type: application/json
+```
+
+RequestBody:
+
+```json
+{
+  "firstName": "John",
+  "lastName": "Doe",
+  "email": "john.doe@example.com",
+  "password": "securePassword123"
+}
+```
+
+Response:
+
+```json
+{
+  "token": "jwt-token-here"
+}
+```
+
+**Login / Authenticate**
+
+```bash
+POST /api/auth/authenticate
+Content-Type: application/json
+```
+
+Request body:
+
+```json
+{
+  "email": "john.doe@example.com",
+  "password": "securePassword123"
+}
+```
+
+Response:
+
+```json
+{
+  "token": "jwt-token-here"
+}
+```
+
+### Books
+
+**Get all books**
+
+```bash
+GET /api/books
+Authorization: Bearer <JWT_TOKEN>
+Content-Type: application/json
+```
+
+Response:
+
+```json
+[
+  {
+    "id": 1,
+    "title": "Book Title",
+    "description": "Book description",
+    "publicationYear": 2022,
+    "category": "FICTION",
+    "available": true,
+    "authorName": "Author Name"
+  }
+]
+```
+
+**Create a new book (Admin Only)**
+
+```bash
+POST /api/books
+Authorization: Bearer <JWT_TOKEN>
+Content-Type: application/json
+```
+
+Request body:
+
+```json
+{
+  "title": "New Book",
+  "description": "Description of new book",
+  "publicationYear": 2025,
+  "category": "SCIENCE",
+  "authorName": "Jane Smith",
+  "available": true
+}
+```
+
+Response:
+
+```json
+{
+  "id": 2,
+  "title": "New Book",
+  "description": "Description of new book",
+  "publicationYear": 2025,
+  "category": "SCIENCE",
+  "available": true,
+  "authorName": "Jane Smith"
+}
+```
+
+### Rents
+
+**Rent a book**
+
+```bash
+POST /api/rents
+Authorization: Bearer <JWT_TOKEN>
+Content-Type: application/json
+```
+
+Request body:
+```json
+{
+  "bookId": 2
+}
+```
+
+Response:
+
+```json
+{
+  "id": 1,
+  "bookTitle": "New Book",
+  "userName": "John Doe",
+  "rentDate": "2025-08-27",
+  "returnDate": null,
+  "status": "RENTED"
+}
+```
+
+**Return a rented book**
+
+```bash
+POST /api/rents/1/return
+Authorization: Bearer <JWT_TOKEN>
+Content-Type: application/json
+```
+
+Response
+
+```json
+{
+  "id": 1,
+  "bookTitle": "New Book",
+  "userName": "John Doe",
+  "rentDate": "2025-08-27",
+  "returnDate": "2025-08-28",
+  "status": "RETURNED"
+}
+```
+
+---
+
+## API Documentation (Swagger)
+
+Swagger UI is available at:
+
+```bash
+http://localhost:8080/swagger-ui/index.html
+```
+
+OpenAPI JSON is available at:
+
+```bash
+http://localhost:8080/v3/api-docs
+```
+
+**Notes:**
+- Make sure your Spring Security configuration allows access to /swagger-ui/** and /v3/api-docs/**.
+- Swagger automatically documents all REST controllers and request/response DTOs.
+
+---
+
+## Project Structure
 
 ```bash
 src/
@@ -93,19 +296,15 @@ src/
 
 ---
 
-## 🔑 Authentication
-Bookify uses JWT for user authentication:
-- User login returns a token.
-- Token is used to access protected resources.
-- Include the token in the header: Authorization: Bearer <token>.
-
-## ⚡ Future Improvements
+## Future Improvements
 - Support favorites functionality
 - Frontend integration (React / Angular).
 - Dockerization
 - User Reviews & Ratings
 
-## 📬 Postman Collection
+---
+
+## Postman Collection
 A Postman collection is provided in the repository to test all Bookify API endpoints.
 
 ### Steps to Run
@@ -130,7 +329,9 @@ A Postman collection is provided in the repository to test all Bookify API endpo
     - Run all (both from folders ADMIN and USER) requests sequentially with previously set order in original file `Bookify.postman_collection.json`.  
     - Make sure the Spring Boot application is running locally before sending requests.
 
-## 📊 Viewing Code Coverage with JaCoCo
+---
+
+## Viewing Code Coverage with JaCoCo
 
 Bookify uses **JaCoCo** to generate code coverage reports for unit tests.
 
@@ -151,6 +352,8 @@ mvn clean test -Dtest=*Test
     - Coverage per class and package
 
 ### Using this report, you can see which parts of the code are tested and identify untested areas. Provided unit-tests cover practically 100% of bussiness logic code
+
+---
 
 ## 📝 License
 MIT License © 2025 Yaroslav Tsvyk
